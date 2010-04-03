@@ -83,7 +83,7 @@ function selectRequest(field, value)
 function startPlayingTimer() {
 	var tim = new goog.Timer(1000);
 	tim.start();
-	goog.events.listen(tim, goog.Timer.TICK, function () {updatePlayingTime()});
+	goog.events.listen(tim, goog.Timer.TICK, function () {updatePlayingTime();});
 }
 
 function statsRequest(who)
@@ -101,14 +101,16 @@ function statsRequest(who)
 
 function updatePlayingTime()
 {
-	if(rem_time > 0) goog.dom.$('playingTime').innerHTML = readableTime(--rem_time);
+	if(rem_time > 0) {
+		goog.dom.$('playingTime').innerHTML = readableTime(--rem_time);
+	}
 }
 
 function startPlayerStateTimer () {
 	playerStateRequest();
 	var timer = new goog.Timer(15000);
 	timer.start();
-	goog.events.listen(timer, goog.Timer.TICK, function () {playerStateRequest()});
+	goog.events.listen(timer, goog.Timer.TICK, function () {playerStateRequest();});
 }
 
 function playerStateRequest () {
@@ -119,27 +121,43 @@ function playerStateRequest () {
 }
 
 function handlePlayerStateRequest (json) {
-	if (json.who) updateCurrentUser(json.who);
+	if (json.who) {
+		updateCurrentUser(json.who);
+	}
 
 	// skip link
-	if (json.can_skip) goog.dom.$('skip_link').style.visibility = 'visible';
-	else goog.dom.$('skip_link').style.visibility = 'hidden';
+	if (json.can_skip) {
+		goog.dom.$('skip_link').style.visibility = 'visible';
+	} else {
+		goog.dom.$('skip_link').style.visibility = 'hidden';
+	}
 	// Admin Dequeue
-	if (json.is_admin) goog.dom.$('purgeuser').style.visibility = 'visible';
-	else goog.dom.$('purgeuser').style.visibility = 'hidden';
+	if (json.is_admin) {
+		goog.dom.$('purgeuser').style.visibility = 'visible';
+	} else {
+		goog.dom.$('purgeuser').style.visibility = 'hidden';
+	}
 
 	updateNowPlaying(json.now_playing, json.player);
-	if (json.player) updateVolumeScale(json.player.volume);
-	if (json.playlist && playlist_pane == 0) updatePlaylist(json.playlist);
+	if (json.player) {
+		updateVolumeScale(json.player.volume);
+	}
+	if (json.playlist && playlist_pane === 0) {
+		updatePlaylist(json.playlist);
+	}
 }
 
 function updateCurrentUser (who) {
 	if (who) {
 		// update the playlist selector on the first time we have a valid user
-		if (!currentUser) updatePlaylistSelector(who);
+		if (!currentUser) {
+			updatePlaylistSelector(who);
+		}
 		currentUser = who;
 		goog.dom.$('loginbox').innerHTML = 'welcome ' + who;
-	} else goog.dom.$('loginbox').innerHTML = '<a href="www-data/auth">Log in</a>';
+	} else {
+		goog.dom.$('loginbox').innerHTML = '<a href="www-data/auth">Log in</a>';
+	}
 }
 
 function updatePlaylist(json)
@@ -200,22 +218,24 @@ function fillPurgeDropDown(options)
 }
 
 function updatePlaylistSelector(who) {
-	if (who) goog.net.XhrIo.send(
-		jsonSource + '?mode=playlists;who='+who,
-		function() {
-			var json = this.getResponseJson();
-			var selector = goog.dom.$('playlistchooser');
-			selector.options.length = 0;
-			selector.options.add(new Option('Queue', 0));
-			selector.options.add(new Option('New playlist...', -1));
-			selector.options.add(new Option('---', 0));
-			for (var i in json) {
+	if (who) {
+		goog.net.XhrIo.send(
+				jsonSource + '?mode=playlists;who='+who,
+				function() {
+				var json = this.getResponseJson();
+				var selector = goog.dom.$('playlistchooser');
+				selector.options.length = 0;
+				selector.options.add(new Option('Queue', 0));
+				selector.options.add(new Option('New playlist...', -1));
+				selector.options.add(new Option('---', 0));
+				for (var i in json) {
 				selector.options.add(
 					new Option(json[i].title, json[i].playlist_id)
+					);
+				}
+				}
 				);
-			}
-		}
-	);
+	}
 }
 
 function selectPlaylist(playlist) {
@@ -224,15 +244,18 @@ function selectPlaylist(playlist) {
 			"Name your playlist!",
 			"experiment " + Math.floor(Math.random()*10000)
 		);
-		if (title) goog.net.XhrIo.send(
-			jsonSource + '?mode=create_playlist;title=' + title,
-			function() {
-				//var json = this.getResponseJson();
-				updatePlaylistSelector(currentUser);
-			}
-		);
-		else updatePlaylistSelector(currentUser);
-	} else if (playlist != 0) { // show a playlist
+		if (title) {
+			goog.net.XhrIo.send(
+					jsonSource + '?mode=create_playlist;title=' + title,
+					function() {
+					//var json = this.getResponseJson();
+					updatePlaylistSelector(currentUser);
+					}
+					);
+		} else {
+			updatePlaylistSelector(currentUser);
+		}
+	} else if (playlist !== 0) { // show a playlist
 		playerStateRequest();
 		goog.net.XhrIo.send(
 			jsonSource + '?mode=playlist_contents;playlist_id=' + playlist,
@@ -295,7 +318,7 @@ function deletePlaylist () {
 }
 
 function enqueuePlaylistShuffled (amount) {
-	if (playlist_pane != 0) {
+	if (playlist_pane !== 0) {
 		goog.net.XhrIo.send(
 			jsonSource + '?mode=playlist_contents;playlist_id=' + playlist_pane,
 			function() {
@@ -319,7 +342,7 @@ function enqueuePlaylistShuffled (amount) {
 }
 
 function enqueuePlaylist () {
-	if (playlist_pane != 0) {
+	if (playlist_pane !== 0) {
 		goog.net.XhrIo.send(
 			jsonSource + '?mode=playlist_contents;playlist_id=' + playlist_pane,
 			function() {
@@ -368,7 +391,7 @@ function showPlaylist(json) {
 function updateNowPlaying(json, player) {
 	if (json) {
 		nowPlaying = '';
-		if (json.who && json.who.indexOf(currentUser) != -1 && playlist_pane == 0) {
+		if (json.who && json.who.indexOf(currentUser) != -1 && playlist_pane === 0) {
 			nowPlaying += '<a href="javascript:unvoteSong(' + json.song_id
 				+ ')"><img src="www-data/icons/delete.png" alt="unvote" /></a> ';
 		} else {
@@ -385,7 +408,9 @@ function updateNowPlaying(json, player) {
 		}
 		nowPlaying += '&nbsp;('+readableTime(json.length)+')';
 		rem_time = parseInt(player.song_start) + parseInt(json.length) - Math.round(((new Date().getTime())/1000));
-		if (rem_time < 0) rem_time = 0;
+		if (rem_time < 0) {
+			rem_time = 0;
+		}
 		nowPlaying += '&nbsp;(<span id="playingTime">'+readableTime(rem_time)+'</span> remaining)';
 	} else {
 		nowPlaying = 'nothing playing';
@@ -428,8 +453,8 @@ function loadPlayHistory(amount, who) {
 		jsonSource + '?mode=history;amount='+amount+';who='+who,
 		function() {
 			var text = amount + ' previously played songs';
-			if (who) text += ' by ' + who;
-			goog.dom.$('result_title').innerHTML = text
+			if (who) {text += ' by ' + who;}
+			goog.dom.$('result_title').innerHTML = text;
 			// TODO: make me mighty
 			fillResultTable(this.getResponseJson());
 			showVoting();
@@ -505,7 +530,7 @@ function getSongDetails(song_id) {
 				+ json.path + '</td></tr>'
 				+ '<tr><th colspan=2>Voters:</th><td colspan=4>';
 			if (json.who.length) {
-				for(var who in json.who) table += '<a href=javascript:loadVotesFromVoter("' + json.who[who] + '")>' + json.who[who] + '</a>&nbsp;';
+				for(var who in json.who) {table += '<a href=javascript:loadVotesFromVoter("' + json.who[who] + '")>' + json.who[who] + '</a>&nbsp;';}
 			} else {
 				table += 'no one';
 			}
@@ -548,7 +573,7 @@ function fillStatsTable(json) {
 			+'<tr><th colspan=2>Most Played Artists:</th></tr>';
 			for(var item in json.top_artists)
 			{
-				table += '<tr><td>'+'<a href="javascript:selectRequest(\'artist\',\'' + json.top_artists[item].artist +'\')">' + json.top_artists[item].artist + '</a></td><td>'+json.top_artists[item].count+'</td></tr>'
+				table += '<tr><td>'+'<a href="javascript:selectRequest(\'artist\',\'' + json.top_artists[item].artist +'\')">' + json.top_artists[item].artist + '</a></td><td>'+json.top_artists[item].count+'</td></tr>';
 			}
 			table +='</table>';
 	goog.dom.$('songresults').innerHTML = table;
@@ -578,7 +603,7 @@ function fillResultTable(json) {
 		+ '<td>'+readableTime(json[item].length)+'</td>'
 		+ '</tr>';
 		this.songIDs.push(json[item].song_id);
-	};
+	}
 	table += '</tbody></table>';
 	goog.dom.$('songresults').innerHTML = table;
 
@@ -593,7 +618,7 @@ function voteSong(song_id) {
 		alert("You must log in first.");
 		return;
 	}
-	if (playlist_pane != 0) {
+	if (playlist_pane !== 0) {
 		goog.net.XhrIo.send(
 			jsonSource + '?mode=add_to_playlist;playlist_id='
 			+ playlist_pane + ';song_id=' + song_id,
@@ -612,7 +637,7 @@ function unvoteSong(song_id) {
 		alert("You must log in first.");
 		return;
 	}
-	if (playlist_pane != 0) {
+	if (playlist_pane !== 0) {
 		goog.net.XhrIo.send(
 			jsonSource + '?mode=remove_from_playlist;playlist_id='
 			+ playlist_pane + ';song_id=' + song_id,
@@ -661,7 +686,7 @@ function updateVolumeScale(volume) {
 	scale = '';
 	for (var i = 1; i <= 11; i++) {
 		scale += '<a ';
-		if (Math.round(volume / 10)+1 == i) scale += 'style="color: red" ';
+		if (Math.round(volume / 10)+1 == i) {scale += 'style="color: red" ';}
 		scale += 'href="javascript:setVolume(' + ((i * 10) - 10) + ')">' + i + '</a> ';
 	}
 	goog.dom.$('volume').innerHTML = scale;
@@ -685,7 +710,7 @@ function formencode(str) {
 }
 
 function titleOrPath(json) {
-	if(json.player) updateVolumeScale(json.player.volume);
+	if(json.player) {updateVolumeScale(json.player.volume);}
 	if (json.title) {
 		return json.title;
 	}
@@ -725,8 +750,8 @@ function voteAll() {
 		goog.net.XhrIo.send(
 				jsonSource + command + block,
 				function() {
-					if (playlist_pane) showPlaylist(this.getResponseJson());
-					else handlePlayerStateRequest(this.getResponseJson());
+					if (playlist_pane) {showPlaylist(this.getResponseJson());}
+					else {handlePlayerStateRequest(this.getResponseJson());}
 				}
 		);
 	}
@@ -743,11 +768,13 @@ function showVoting() {
 function shuffle(array) {
 	var tmp, current, top = array.length;
 
-	if(top) while(--top) {
-		current = Math.floor(Math.random() * (top + 1));
-		tmp = array[current];
-		array[current] = array[top];
-		array[top] = tmp;
+	if(top) {
+		while(--top) {
+			current = Math.floor(Math.random() * (top + 1));
+			tmp = array[current];
+			array[current] = array[top];
+			array[top] = tmp;
+		}
 	}
 
 	return array;
